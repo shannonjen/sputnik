@@ -1,0 +1,89 @@
+<html>
+<head>
+	<title>Sputnik</title>
+	<style>
+		body { margin: 0; }
+		canvas { width: 100%; height: 100% }
+	</style>
+</head>
+<body>
+	<script src="js/three.min.js"></script>
+	<script src="js/stats.min.js"></script>
+	<script src="js/OrbitControls.js"></script>
+	<script>
+	
+	
+	var scene, camera, renderer, video;
+	var videoImage, videoTexture, movieScreen, movieMaterial, movieGeometry, videoImageContext;
+
+	init();
+	animate();
+
+	function init() {
+		scene = new THREE.Scene();
+
+		camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+
+		renderer = new THREE.WebGLRenderer();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
+
+		video = document.createElement('video');
+		video.src = "Sputnik.mp4";
+		video.load();
+		video.play();
+
+		videoImage = document.createElement( 'canvas' );
+		videoImage.width = 638; 
+		videoImage.height = 358; 
+
+		videoImageContext = videoImage.getContext( '2d' );
+		videoImageContext.fillStyle = '#000000';
+		videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+		videoTexture = new THREE.Texture( videoImage );
+		videoTexture.minFilter = THREE.LinearFilter;
+		videoTexture.magFilter = THREE.LinearFilter;
+
+		movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true} );
+
+		movieGeometry = new THREE.SphereGeometry( 100, 40, 40);
+	
+		movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+		movieScreen.position.set(0,0,0);
+		scene.add(movieScreen);
+	
+		camera.position.set(200,0,0);
+		camera.lookAt(movieScreen.position);
+
+ 		controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+		stats = new Stats();
+		stats.setMode(0);
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.left = '0px';
+		stats.domElement.style.top = '0px';
+		document.body.appendChild( stats.domElement );
+	}
+
+	function animate() {
+		requestAnimationFrame( animate );
+		render();
+		stats.update();
+	}
+
+	function render() 
+	{	
+		if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+		{
+			videoImageContext.drawImage( video, 0, 0 );
+			if ( videoTexture ) 
+				videoTexture.needsUpdate = true;
+		}
+
+		renderer.render( scene, camera );
+		controls.update();
+	}		
+</script>
+</body>
+</html>
